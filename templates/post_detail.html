@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+
+<section style="max-width: 800px; margin: 0 auto; padding: 40px 30px;">
+    
+    <!-- 뒤로가기 버튼 -->
+    <div style="margin-bottom: 30px;">
+        <a href="/board" style="display: inline-flex; align-items: center; color: #8b7355; text-decoration: none; font-weight: 400;">
+            <span style="margin-right: 5px;">←</span> 게시판으로 돌아가기
+        </a>
+    </div>
+
+    <!-- 게시글 상세 내용 -->
+    <article style="background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #f0f0f0;">
+        
+        <!-- 게시글 헤더 -->
+        <div style="padding: 30px 30px 20px 30px; border-bottom: 1px solid #f5f5f5;">
+            <h1 style="font-size: 1.8em; color: #2c3e50; margin: 0 0 15px 0; font-weight: 500; line-height: 1.4;">
+                {{ post.title }}
+            </h1>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div style="color: #999; font-size: 0.95em;">
+                    <span style="color: #8b7355; font-weight: 400;">{{ post.author }}</span> | 
+                    {% set display_date = get_display_date(post) %}
+                    {% if display_date != post.date_posted %}
+                        {% set extracted_date = extract_date_from_content(post.content) %}
+                        <span style="color: #999; font-weight: 500;">{{ display_date.strftime('%Y년 %m월 %d일') }}</span>
+                        <!--<span style="color: #999; font-size: 0.9em;">({{ extracted_date.strftime('%m.%d') }})</span>
+                        <br><span style="color: #999; font-size: 0.85em;">실제 게시일: {{ post.date_posted.strftime('%Y년 %m월 %d일 %H:%M') }} --></span>
+                    {% else %}
+                        {{ post.date_posted.strftime('%Y년 %m월 %d일 %H:%M') }}
+                    {% endif %}
+                    {% if is_admin %}
+                        <span style="background: #8b7355; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">관리자</span>
+                    {% endif %}
+                </div>
+                
+                <!-- 관리자 전용 수정/삭제 버튼 -->
+                {% if is_admin %}
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <a href="/edit/{{ post.id }}" 
+                       style="background: #17a2b8; color: white; padding: 8px 16px; text-decoration: none; border-radius: 20px; font-size: 0.9em; transition: all 0.3s ease;"
+                       onmouseover="this.style.background='#138496'"
+                       onmouseout="this.style.background='#17a2b8'">
+                        ✏️ 수정
+                    </a>
+                    <button onclick="deletePost({{ post.id }})" 
+                            style="background: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 20px; font-size: 0.9em; cursor: pointer; transition: all 0.3s ease;"
+                            onmouseover="this.style.background='#c82333'"
+                            onmouseout="this.style.background='#dc3545'">
+                        🗑️ 삭제
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- 게시글 이미지 -->
+        {% if post.image_filename %}
+        <div style="text-align: center; padding: 20px; background: #f8f9fa;">
+            <img src="{{ url_for('static', filename='uploads/' + post.image_filename) }}" 
+                 alt="첨부 이미지" 
+                 style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer;"
+                 onclick="openImageModal(this.src, '{{ post.title }}')">
+        </div>
+        {% endif %}
+        
+        <!-- 게시글 본문 -->
+        <div style="padding: 30px;">
+            <div style="line-height: 1.8; color: #444; font-size: 1.05em; white-space: pre-wrap;">{{ post.content }}</div>
+        </div>
+        
+    </article>
+
+    <!-- 하단 네비게이션 -->
+    <div style="text-align: center; margin-top: 40px;">
+        <a href="/board" 
+           style="display: inline-block; background-color: #8b7355; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: 400; margin-right: 10px; transition: all 0.3s ease;"
+           onmouseover="this.style.background='#6d5a42'"
+           onmouseout="this.style.background='#8b7355'">
+            📋 게시판 목록
+        </a>
+        {% if is_admin %}
+        <a href="/write" 
+           style="display: inline-block; background: transparent; color: #8b7355; padding: 12px 24px; text-decoration: none; border: 2px solid #8b7355; border-radius: 25px; font-weight: 400; transition: all 0.3s ease;"
+           onmouseover="this.style.background='#8b7355'; this.style.color='white'"
+           onmouseout="this.style.background='transparent'; this.style.color='#8b7355'">
+            ✏️ 새 글 작성
+        </a>
+        {% endif %}
+    </div>
+
+</section>
+
+<!-- 이미지 모달 -->
+<div id="imageModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); cursor: pointer;" onclick="closeImageModal()">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 90%; max-height: 90%;">
+        <img id="modalImage" src="" alt="" style="max-width: 100%; max-height: 100%; border-radius: 8px;">
+        <p id="modalTitle" style="color: white; text-align: center; margin-top: 15px; font-size: 1.1em;"></p>
+    </div>
+    <div style="position: absolute; top: 20px; right: 30px; color: white; font-size: 2em; cursor: pointer;" onclick="closeImageModal()">&times;</div>
+</div>
+
+<script>
+function deletePost(postId) {
+    if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+        fetch('/delete/' + postId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('게시글이 삭제되었습니다.');
+                window.location.href = '/board';
+            } else {
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('삭제 중 오류가 발생했습니다.');
+        });
+    }
+}
+
+function openImageModal(imageSrc, title) {
+    document.getElementById('modalImage').src = imageSrc;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('imageModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+});
+</script>
+
+{% endblock %}

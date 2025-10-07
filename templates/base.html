@@ -1,1 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - 앙상블 다유</title>
+    <style>
+      :root {
+    /* 주요 색상 */
+    --primary-color: #3a7ca5;  /* 딥 아쿠아 블루 (메뉴/헤더) */
+    --secondary-color: #7fc8f8;  /* 미디움 스카이 블루 */
+    --accent-color: #ff914d;  /* 코랄 오렌지 (포인트) */
+    --light-bg: #f0f9ff;  /* 아주 밝은 하늘색 계열 */
+    
+    /* 보조 색상 */
+    --highlight-color: #d0ebff;  /* 밝은 하늘색 */
+            --white: #ffffff;
+            --text-color: #333333;
+            --text-light: #666666;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Navigation */
+        nav {
+            background-color: var(--primary-color);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+            
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        nav a {
+            color: var(--white);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 400;
+            transition: all 0.3s ease;
+        }
+        
+        nav a:hover, nav a.active {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        /* Flash messages */
+        .flash-messages {
+            margin: 1rem 0;
+        }
+        
+        .flash-message {
+            padding: 1rem;
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            border-radius: 4px;
+            color: #2e7d32;
+            margin-bottom: 1rem;
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        button, .btn {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        button:hover, .btn:hover {
+            background-color: #6d5a42;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--secondary-color);
+            color: var(--secondary-color);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        /* Cards */
+        .card {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        
+        /* Utility classes */
+        .text-center {
+            text-align: center;
+        }
+        
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mt-4 { margin-top: 2rem; }
+        
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .mb-4 { margin-bottom: 2rem; }
+        
+        /* Hero section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-color), #5d6f80);
+            color: white;
+            padding: 4rem 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
 
+        .hero h1 span {
+            color: var(--highlight-color);  /* 변경된 밝은 색상 적용 */
+            font-weight: 400;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 1.5rem;
+            opacity: 0.9;
+        }
+        
+        .divider {
+            width: 60px;
+            height: 3px;
+            background-color: var(--secondary-color);
+            margin: 1.5rem auto;
+            border: none;
+        }
+        
+        /* Footer styles */
+        .footer {
+            background: linear-gradient(135deg, var(--primary-color), #2c5973);
+            color: white;
+            padding: 30px 0;
+            margin-top: 60px;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+            text-align: center;
+        }
+        
+        .footer-title {
+            font-size: 1.5em;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--white);
+        }
+        
+        .footer-info {
+            line-height: 2;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95em;
+        }
+        
+        .footer-info p {
+            margin: 8px 0;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 20px;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+            }
+            
+            .nav-links {
+                margin-top: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/" style="font-weight: 500;">앙상블 다유</a>
+            <div class="nav-links">
+                <a href="/" class="{% if request.path == '/' %}active{% endif %}">홈</a>
+                <a href="/greeting" class="{% if request.path == '/greeting' %}active{% endif %}">인사말</a>
+                <a href="/members" class="{% if request.path == '/members' %}active{% endif %}">단원소개</a>
+                <a href="/healingconcert" class="{% if request.path == '/healingconcert' %}active{% endif %}">힐링콘서트</a>
+                <a href="/board" class="{% if request.path == '/board' %}active{% endif %}">게시판</a>
+                <a href="/portfolio" class="{% if request.path == '/portfolio' %}active{% endif %}">영상포트폴리오</a>
+                <a href="/contact" class="{% if request.path == '/contact' %}active{% endif %}">문의</a>
+    {% if is_admin %}
+        <a href="/admin">관리자</a>
+        <a href="/admin/logout" style="color: #dc3545;">로그아웃</a>
+    {% endif %}
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="flash-message">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- 푸터 -->
+    <footer class="footer">
+        <div class="footer-content">
+            
+            <div class="footer-info">
+                <p>📍 소재지: 서울시 종로구 평창4길 76 갤러리겸 &nbsp;&nbsp;|&nbsp;&nbsp; 👨‍💼 대표: 천현정</p>
+                <p>📞 연락처: 010-9404-5028 &nbsp;&nbsp;|&nbsp;&nbsp; 📠 팩스: 0504-069-5028</p>
+                <p>📋 고유번호증: 231-82-72986 &nbsp;&nbsp;|&nbsp;&nbsp; 📧 이메일: dayu_ensemble@naver.com</p>
+            </div>
+            
+        </div>
+    </footer>
+    
+    <!-- 키보드 단축키 (관리자 접근용) -->
+    <script>
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.shiftKey && event.key === 'A') {
+            event.preventDefault();
+            window.location.href = '/secret-admin-access-2025';
+        }
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}단원소개{% endblock %}
+{% block content %}
+<style>
+/* Hero와 Card를 같은 폭으로 맞추기 */
+.hero {
+    max-width: 1200px !important;
+    margin: 0 auto 2rem auto !important;
+    border-radius: 8px !important;
+}
+
+.card {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 0 auto 2rem auto !important;
+    padding: 2rem 3rem !important;
+}
+</style>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1>단원 <span style="color: #d1c0a8;">소개</span></h1>
+        <hr class="divider">
+        <p>음악에 대한 열정과 전문성을 갖춘 첼로앙상블 다유의 멤버들을 소개합니다</p>
+    </div>
+</section>
+
+<!-- Members Section -->
+<section class="container">
+    <!-- Cello Members -->
+    <div class="mb-4">
+        {% for member in [
+            {"name": "최정윤", "role": "첼로", "bio": ["맨하탄음대 졸업", "뉴욕대학교음대 대학원 졸업", "서울심포니오케스트라 첼로단원", "금호아트홀 독주회", "예술의전당 IBK홀 독주회", "발달장애 앙상블힐 지도"]},
+            {"name": "김희재", "role": "첼로", "bio": ["한양대학교 음악대학 관현악과 졸업", "연세대학교 음악대학원 석사 졸업", "여주대학교 전국 음악 콩쿠르 현악부문 금상", "서울시립대학교 전국 음악 콩쿠르 3위", "발달장애 첼로연주자 지도"]},
+            {"name": "장은주", "role": "첼로", "bio": ["(사)인씨엠예술단 첼로단원", "행복나무 (삶과 나눔 콘서트) 연주", "Espressivo 1회 정기 연주회", "발달장애 앙상블힐 지도"]},
+            {"name": "최영순", "role": "첼로 · 지휘", "bio": ["이화여대음대 졸업", "코리안필오케스트라 단원 역임", "KBS창작동요제 대상 수상", "수수꽃다리, 자작나무숲에서 작곡", "앙상블힐 지휘, 지도"]},
+            {"name": "이명복", "role": "첼로", "bio": ["앙상블다유", "코리아필하모니오케스트라", "시민필오케스트라", "코리아필오케스트라 단무장 역임", "코리아필오케스트라 다수의 정기연주회 연주"]},
+            {"name": "조수자", "role": "첼로", "bio": ["숙명여자대학교 오케스트라", "서울 이무지치", "코리안 크리스챤 필하모닉", "실로암선교단"]}
+        ] %}
+<div class="card" style="width: 100%; min-width: 800px; margin: 0 auto 2rem auto;">
+            <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
+                <!-- Member Photo -->
+                <div style="flex-shrink: 0; width: 120px; height: 150px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: relative;">
+                    <img src="{{ url_for('static', filename='images/members/' + member.name + '.jpg') }}" 
+                         alt="{{ member.name }}" 
+                         style="width: 100%; height: 100%; object-fit: cover;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <!-- 사진이 없을 때 표시할 플레이스홀더 -->
+                    <div style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #f0f0f0; align-items: center; justify-content: center; color: var(--text-light); text-align: center; font-size: 0.9em;">
+                        {{ member.name }}<br>사진
+                    </div>
+                </div>
+                <!-- Member Info -->
+                <div>
+                    <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">{{ member.name }}</h3>
+                    <p style="color: var(--secondary-color); margin-bottom: 1rem; font-weight: 500;">{{ member.role }}</p>
+                    <ul style="list-style-type: none; padding-left: 0;">
+                        {% for item in member.bio %}
+                        <li style="margin-bottom: 0.3rem; position: relative; padding-left: 1.2rem;">
+                            <span style="position: absolute; left: 0; color: var(--secondary-color);">•</span> {{ item }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pianist Section -->
+    <!-- Pianist Card -->
+    <div class="card">
+        <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
+            <!-- Pianist Photo -->
+            <div style="flex-shrink: 0; width: 120px; height: 150px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: relative;">
+                <img src="{{ url_for('static', filename='images/members/윤경운.jpg') }}" 
+                     alt="윤경운" 
+                     style="width: 100%; height: 100%; object-fit: cover;"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <!-- 사진이 없을 때 표시할 플레이스홀더 -->
+                <div style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #e3f2fd; align-items: center; justify-content: center; color: var(--accent-color); text-align: center; font-size: 0.9em;">
+                    윤경운<br>사진
+                </div>
+            </div>
+            <!-- Pianist Info -->
+            <div>
+                <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">윤경운</h3>
+                <p style="color: var(--accent-color); margin-bottom: 1rem; font-weight: 500;">피아노</p>
+                <ul style="list-style-type: none; padding-left: 0;">
+                    <li style="margin-bottom: 0.3rem; position: relative; padding-left: 1.2rem;">
+                        <span style="position: absolute; left: 0; color: var(--accent-color);">•</span> 앙상블다유
+                    </li>
+                    <li style="margin-bottom: 0.3rem; position: relative; padding-left: 1.2rem;">
+                        <span style="position: absolute; left: 0; color: var(--accent-color);">•</span> 뮌스터음대 협연
+                    </li>
+                    <li style="margin-bottom: 0.3rem; position: relative; padding-left: 1.2rem;">
+                        <span style="position: absolute; left: 0; color: var(--accent-color);">•</span> 이벤뷔렌 오케스트라 협연
+                    </li>
+                    <li style="margin-bottom: 0.3rem; position: relative; padding-left: 1.2rem;">
+                        <span style="position: absolute; left: 0; color: var(--accent-color);">•</span> 숭실교회 피아노연주자
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Message -->
+    <div class="card text-center" style="background-color: #f8f6f3;">
+        <h3>🎼 함께 만들어가는 아름다운 하모니</h3>
+        <p class="mb-3">
+            각자의 개성과 전문성을 바탕으로<br>
+            하나의 아름다운 선율을 만들어가는 첼로앙상블 다유입니다.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="/contact" class="btn btn-outline">문의하기</a>
+        </div>
+    </div>
+</section>
+
+<style>
+@media (max-width: 768px) {
+    .card > div {
+        flex-direction: column;
+    }
+    
+    .card > div > div:first-child {
+        margin-bottom: 1rem;
+        width: 100%;
+        height: 200px;
+    }
+}
+</style>
+{% endblock %}

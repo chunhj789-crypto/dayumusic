@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+{% block title %}영상 추가{% endblock %}
+{% block content %}
+
+<section style="max-width: 800px; margin: 0 auto; padding: 40px 30px;">
+    
+    <!-- 페이지 헤더 -->
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.2em; color: #2c3e50; font-weight: 300; margin: 0;">영상 추가</h1>
+        <div style="width: 50px; height: 2px; background: #8b7355; margin: 20px auto;"></div>
+        <p style="color: #666; font-size: 1em;">YouTube 영상을 추가하세요</p>
+    </div>
+
+    <!-- 뒤로가기 버튼 -->
+    <div style="margin-bottom: 30px;">
+        <a href="/portfolio" 
+           style="display: inline-flex; align-items: center; color: #8b7355; text-decoration: none; font-weight: 400; transition: all 0.3s ease;"
+           onmouseover="this.style.color='#6d5a42'"
+           onmouseout="this.style.color='#8b7355'">
+            ← 포트폴리오로 돌아가기
+        </a>
+    </div>
+
+    <!-- 영상 추가 폼 -->
+    <div style="background: #ffffff; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 40px;">
+        <form method="POST" enctype="multipart/form-data" id="addVideoForm">
+            <input type="hidden" name="platform" value="youtube">
+            
+            <!-- YouTube URL 입력 -->
+            <div style="margin-bottom: 30px;">
+                <label for="youtube_url" style="display: block; margin-bottom: 10px; font-weight: 500; color: #2c3e50;">
+                    <i class="fab fa-youtube" style="color: #ff0000; margin-right: 8px;"></i>YouTube URL *
+                </label>
+                <input type="url" 
+                       id="youtube_url" 
+                       name="video_url" 
+                       required
+                       placeholder="https://www.youtube.com/watch?v=... 또는 https://youtu.be/..."
+                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;"
+                       onchange="extractYouTubeInfo()">
+                <div style="margin-top: 5px; color: #666; font-size: 0.9em;">
+                    YouTube 영상 URL을 입력하면 자동으로 썸네일을 가져옵니다
+                </div>
+            </div>
+            
+            <!-- YouTube 미리보기 -->
+            <div id="youtube-preview" style="display: none; margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <div style="display: flex; gap: 20px; align-items: flex-start;">
+                    <img id="youtube-thumbnail" style="width: 200px; height: 112px; object-fit: cover; border-radius: 8px;">
+                    <div style="flex: 1;">
+                        <h4 id="youtube-title" style="margin: 0 0 10px 0; color: #2c3e50;"></h4>
+                        <p id="youtube-description" style="margin: 0; color: #666; font-size: 0.9em; line-height: 1.5;"></p>
+                        <div style="margin-top: 10px; color: #999; font-size: 0.8em;">
+                            <span id="youtube-duration"></span> • <span id="youtube-views"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 공통 입력 필드들 -->
+            <div style="border-top: 1px solid #f0f0f0; padding-top: 30px; margin-top: 30px;">
+                
+                <!-- 영상 제목 -->
+                <div style="margin-bottom: 25px;">
+                    <label for="title" style="display: block; margin-bottom: 10px; font-weight: 500; color: #2c3e50;">영상 제목 *</label>
+                    <input type="text" 
+                           id="title" 
+                           name="title" 
+                           required 
+                           placeholder="영상 제목을 입력하세요"
+                           style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                </div>
+
+                <!-- 영상 설명 -->
+                <div style="margin-bottom: 25px;">
+                    <label for="description" style="display: block; margin-bottom: 10px; font-weight: 500; color: #2c3e50;">영상 설명</label>
+                    <textarea id="description" 
+                              name="description" 
+                              rows="5" 
+                              placeholder="영상에 대한 설명을 입력하세요"
+                              style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; resize: vertical;"></textarea>
+                </div>
+
+                <!-- 연주자/작성자 -->
+                <div style="margin-bottom: 25px;">
+                    <label for="author" style="display: block; margin-bottom: 10px; font-weight: 500; color: #2c3e50;">연주자/작성자</label>
+                    <input type="text" 
+                           id="author" 
+                           name="author" 
+                           value="앙상블 다유"
+                           placeholder="연주자 또는 작성자명"
+                           style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                </div>
+
+                <!-- 공연 날짜 -->
+                <div style="margin-bottom: 25px;">
+                    <label for="performance_date" style="display: block; margin-bottom: 10px; font-weight: 500; color: #2c3e50;">공연 날짜 (선택사항)</label>
+                    <input type="date" 
+                           id="performance_date" 
+                           name="performance_date"
+                           style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                </div>
+
+                <!-- 태그 -->
+                <div style="margin-bottom: 25px;">
+                    <label for="tags" style="display: block; margin-bottom: 10px; font-weight: 500; color: #2c3e50;">태그 (선택사항)</label>
+                    <input type="text" 
+                           id="tags" 
+                           name="tags" 
+                           placeholder="태그를 쉼표로 구분하여 입력하세요 (예: 클래식, 실내악, 콘서트)"
+                           style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                    <div style="margin-top: 5px; color: #666; font-size: 0.9em;">
+                        검색과 분류를 위한 태그를 입력하세요
+                    </div>
+                </div>
+
+                <!-- 썸네일 커스터마이징 (선택사항) -->
+                <div style="margin-bottom: 25px;">
+                    <label for="custom_thumbnail" style="display: block; margin-bottom: 10px; font-weight: 500; color: #2c3e50;">커스텀 썸네일 (선택사항)</label>
+                    <input type="file" 
+                           id="custom_thumbnail" 
+                           name="custom_thumbnail" 
+                           accept="image/*"
+                           style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;"
+                           onchange="previewThumbnail(this)">
+                    <div style="margin-top: 5px; color: #666; font-size: 0.9em;">
+                        업로드하지 않으면 YouTube의 기본 썸네일을 사용합니다
+                    </div>
+                    
+                    <!-- 썸네일 미리보기 -->
+                    <div id="thumbnail-preview" style="display: none; margin-top: 15px;">
+                        <img id="preview-thumbnail" style="width: 200px; height: 112px; object-fit: cover; border-radius: 8px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 버튼들 -->
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 40px; flex-wrap: wrap;">
+                <button type="button" 
+                        onclick="window.location.href='/portfolio'"
+                        style="background: #f8f9fa; color: #666; padding: 12px 30px; border: 1px solid #ddd; border-radius: 25px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease;"
+                        onmouseover="this.style.background='#e9ecef'"
+                        onmouseout="this.style.background='#f8f9fa'">
+                    취소
+                </button>
+                
+                <button type="submit" 
+                        id="submitBtn"
+                        style="background: #ff0000; color: white; padding: 12px 30px; border: none; border-radius: 25px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease;"
+                        onmouseover="this.style.background='#cc0000'"
+                        onmouseout="this.style.background='#ff0000'">
+                    <i class="fab fa-youtube" style="margin-right: 8px;"></i>영상 추가
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<style>
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    section {
+        padding: 20px 15px !important;
+    }
+    
+    .button-group {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+    
+    .button-group button {
+        width: 100% !important;
+    }
+    
+    .preview-container {
+        flex-direction: column !important;
+    }
+    
+    .preview-container img {
+        width: 100% !important;
+        max-width: 300px;
+    }
+}
+
+/* 입력 필드 포커스 스타일 */
+input:focus, textarea:focus {
+    outline: none;
+    border-color: #ff0000;
+    box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.1);
+}
+
+/* 미리보기 카드 스타일 */
+#youtube-preview {
+    border-left: 4px solid #ff0000;
+}
+
+/* 버튼 애니메이션 */
+button {
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+</style>
+
+<script>
+// YouTube 정보 추출
+async function extractYouTubeInfo() {
+    const url = document.getElementById('youtube_url').value;
+    if (!url) return;
+    
+    const videoId = extractYouTubeVideoId(url);
+    if (!videoId) {
+        alert('올바른 YouTube URL을 입력해주세요.');
+        return;
+    }
+    
+    try {
+        // 기본 썸네일만 표시 (API 호출 대신)
+        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        document.getElementById('youtube-thumbnail').src = thumbnailUrl;
+        document.getElementById('youtube-title').textContent = '제목을 직접 입력해주세요';
+        document.getElementById('youtube-description').textContent = 'YouTube 영상';
+        document.getElementById('youtube-preview').style.display = 'block';
+        
+    } catch (error) {
+        console.error('YouTube 정보 가져오기 실패:', error);
+        alert('YouTube 정보를 가져올 수 없습니다.');
+    }
+}
+
+// YouTube 비디오 ID 추출
+function extractYouTubeVideoId(url) {
+    const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+}
+
+// 커스텀 썸네일 미리보기
+function previewThumbnail(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('preview-thumbnail').src = e.target.result;
+        document.getElementById('thumbnail-preview').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+// 폼 제출 처리
+document.getElementById('addVideoForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    // 유효성 검사
+    if (!validateForm()) {
+        return;
+    }
+    
+    // 제출 버튼 비활성화
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>추가 중...';
+    submitBtn.style.background = '#6c757d';
+    
+    // 일반 폼 제출
+    this.submit();
+});
+
+// 폼 유효성 검사
+function validateForm() {
+    const title = document.getElementById('title').value.trim();
+    if (!title) {
+        alert('영상 제목을 입력해주세요.');
+        document.getElementById('title').focus();
+        return false;
+    }
+    
+    const url = document.getElementById('youtube_url').value.trim();
+    if (!url) {
+        alert('YouTube URL을 입력해주세요.');
+        document.getElementById('youtube_url').focus();
+        return false;
+    }
+    
+    if (!extractYouTubeVideoId(url)) {
+        alert('올바른 YouTube URL을 입력해주세요.');
+        document.getElementById('youtube_url').focus();
+        return false;
+    }
+    
+    return true;
+}
+
+// 태그 입력 도우미
+document.getElementById('tags').addEventListener('input', function(event) {
+    let value = event.target.value;
+    // 연속된 쉼표나 공백 정리
+    value = value.replace(/,+/g, ',').replace(/\s+,/g, ',').replace(/,\s+/g, ', ');
+    if (value !== event.target.value) {
+        event.target.value = value;
+    }
+});
+
+// 페이지 이탈 경고
+let formChanged = false;
+
+// 폼 변경 감지
+document.querySelectorAll('#addVideoForm input, #addVideoForm textarea').forEach(element => {
+    element.addEventListener('change', function() {
+        formChanged = true;
+    });
+});
+
+// 페이지 이탈 시 경고
+window.addEventListener('beforeunload', function(event) {
+    if (formChanged && !document.getElementById('submitBtn').disabled) {
+        event.preventDefault();
+        event.returnValue = '변경사항이 저장되지 않았습니다. 페이지를 떠나시겠습니까?';
+        return event.returnValue;
+    }
+});
+
+// 키보드 단축키
+document.addEventListener('keydown', function(event) {
+    // Ctrl+Enter로 폼 제출
+    if (event.ctrlKey && event.key === 'Enter') {
+        event.preventDefault();
+        document.getElementById('addVideoForm').dispatchEvent(new Event('submit'));
+    }
+    
+    // ESC로 취소
+    if (event.key === 'Escape') {
+        if (confirm('영상 추가를 취소하고 포트폴리오로 돌아가시겠습니까?')) {
+            window.location.href = '/portfolio';
+        }
+    }
+});
+
+// 자동 저장 기능 (로컬 스토리지)
+function autoSave() {
+    if (typeof(Storage) !== "undefined") {
+        const formData = {
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            author: document.getElementById('author').value,
+            performance_date: document.getElementById('performance_date').value,
+            tags: document.getElementById('tags').value,
+            youtube_url: document.getElementById('youtube_url').value
+        };
+        localStorage.setItem('video_form_draft', JSON.stringify(formData));
+    }
+}
+
+// 임시 저장된 데이터 복원
+function restoreFromAutoSave() {
+    if (typeof(Storage) !== "undefined") {
+        const saved = localStorage.getItem('video_form_draft');
+        if (saved && confirm('이전에 작성 중이던 내용이 있습니다. 복원하시겠습니까?')) {
+            const formData = JSON.parse(saved);
+            
+            document.getElementById('title').value = formData.title || '';
+            document.getElementById('description').value = formData.description || '';
+            document.getElementById('author').value = formData.author || '';
+            document.getElementById('performance_date').value = formData.performance_date || '';
+            document.getElementById('tags').value = formData.tags || '';
+            document.getElementById('youtube_url').value = formData.youtube_url || '';
+            
+            // URL이 있으면 미리보기 표시
+            if (formData.youtube_url) {
+                extractYouTubeInfo();
+            }
+        }
+    }
+}
+
+// 페이지 로드 시 자동 저장 복원
+window.addEventListener('load', function() {
+    restoreFromAutoSave();
+});
+
+// 입력 시 자동 저장
+let autoSaveTimer;
+document.querySelectorAll('#addVideoForm input, #addVideoForm textarea').forEach(element => {
+    element.addEventListener('input', function() {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(autoSave, 2000); // 2초 후 자동 저장
+    });
+});
+
+// 폼 제출 성공 시 임시 저장 데이터 삭제
+function clearAutoSave() {
+    if (typeof(Storage) !== "undefined") {
+        localStorage.removeItem('video_form_draft');
+    }
+}
+
+// URL 입력 시 자동으로 제목 필드로 포커스 이동
+document.getElementById('youtube_url').addEventListener('blur', function() {
+    if (this.value && !document.getElementById('title').value) {
+        setTimeout(() => {
+            document.getElementById('title').focus();
+        }, 500);
+    }
+});
+</script>
+
+{% endblock %}

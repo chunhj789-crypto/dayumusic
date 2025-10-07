@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}게시글 수정{% endblock %}
+{% block content %}
+
+<section style="max-width: 700px; margin: 0 auto; padding: 40px 30px;">
+    
+    <!-- 뒤로가기 버튼 -->
+    <div style="margin-bottom: 30px;">
+        <a href="/post/{{ post.id }}" style="display: inline-flex; align-items: center; color: #8b7355; text-decoration: none; font-weight: 400;">
+            <span style="margin-right: 5px;">←</span> 게시글로 돌아가기
+        </a>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.2em; color: #2c3e50; font-weight: 300; margin: 0;">게시글 수정</h1>
+        <div style="width: 50px; height: 2px; background: #8b7355; margin: 20px auto;"></div>
+        <p style="color: #666; font-size: 0.95em; margin-top: 15px;">관리자 전용 게시글 수정 페이지입니다</p>
+    </div>
+
+    <div style="background: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #f0f0f0;">
+        
+        <form method="POST" enctype="multipart/form-data">
+            
+            <div style="margin-bottom: 25px;">
+                <label for="title" style="display: block; margin-bottom: 8px; font-weight: 500; color: #2c3e50;">제목</label>
+                <input type="text" id="title" name="title" value="{{ post.title }}" required 
+                       style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 1em; transition: border-color 0.3s ease;"
+                       onfocus="this.style.borderColor='#8b7355'"
+                       onblur="this.style.borderColor='#e1e5e9'">
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <label for="author" style="display: block; margin-bottom: 8px; font-weight: 500; color: #2c3e50;">작성자</label>
+                <input type="text" id="author" name="author" value="{{ post.author }}" required 
+                       style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 1em; transition: border-color 0.3s ease;"
+                       onfocus="this.style.borderColor='#8b7355'"
+                       onblur="this.style.borderColor='#e1e5e9'">
+            </div>
+
+            <!-- 현재 이미지 표시 -->
+            {% if post.image_filename %}
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #2c3e50;">현재 이미지</label>
+                <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+                    <img src="{{ url_for('static', filename='uploads/' + post.image_filename) }}" 
+                         alt="현재 이미지" 
+                         style="max-width: 200px; max-height: 150px; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <p style="margin: 10px 0 0 0; color: #666; font-size: 0.9em;">현재 이미지 (새 이미지를 선택하면 교체됩니다)</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 이미지 업로드 필드 -->
+            <div style="margin-bottom: 25px;">
+                <label for="image" style="display: block; margin-bottom: 8px; font-weight: 500; color: #2c3e50;">
+                    새 이미지 {% if not post.image_filename %}(선택사항){% else %}(교체하려면 선택){% endif %}
+                    <span style="font-size: 0.9em; color: #666; font-weight: 300;">(PNG/JPG/JPEG/GIF, 최대 16MB)</span>
+                </label>
+                <div style="position: relative;">
+                    <input type="file" id="image" name="image" accept=".png,.jpg,.jpeg,.gif"
+                           style="width: 100%; padding: 12px; border: 2px dashed #e1e5e9; border-radius: 6px; background: #f8f9fa; cursor: pointer; transition: all 0.3s ease;"
+                           onchange="previewImage(this)"
+                           onfocus="this.style.borderColor='#8b7355'"
+                           onblur="this.style.borderColor='#e1e5e9'">
+                </div>
+                
+                <!-- 새 이미지 미리보기 -->
+                <div id="imagePreview" style="margin-top: 15px; display: none;">
+                    <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">새 이미지 미리보기:</p>
+                    <img id="previewImg" src="" alt="미리보기" 
+                         style="max-width: 100%; max-height: 300px; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <label for="content" style="display: block; margin-bottom: 8px; font-weight: 500; color: #2c3e50;">내용</label>
+                <textarea id="content" name="content" rows="12" required 
+                          style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 1em; resize: vertical; font-family: inherit; transition: border-color 0.3s ease;"
+                          onfocus="this.style.borderColor='#8b7355'"
+                          onblur="this.style.borderColor='#e1e5e9'">{{ post.content }}</textarea>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button type="submit" 
+                        style="background-color: #8b7355; color: white; padding: 14px 30px; border: none; border-radius: 25px; cursor: pointer; font-size: 1em; font-weight: 400; margin-right: 15px; transition: all 0.3s ease;"
+                        onmouseover="this.style.background='#6d5a42'"
+                        onmouseout="this.style.background='#8b7355'">
+                    💾 수정하기
+                </button>
+                <a href="/post/{{ post.id }}" 
+                   style="display: inline-block; background: transparent; color: #8b7355; padding: 14px 30px; text-decoration: none; border: 2px solid #8b7355; border-radius: 25px; font-weight: 400; transition: all 0.3s ease;"
+                   onmouseover="this.style.background='#8b7355'; this.style.color='white'"
+                   onmouseout="this.style.background='transparent'; this.style.color='#8b7355'">
+                    취소
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.style.display = 'none';
+    }
+}
+</script>
+
+{% endblock %}

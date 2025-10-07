@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit"></i> 영상 수정
+                    </h4>
+                    <a href="{{ url_for('portfolio') }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> 목록으로
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                    <!-- 현재 영상 미리보기 -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            {% if video.platform == 'youtube' and video.video_id %}
+                            <img src="https://img.youtube.com/vi/{{ video.video_id }}/hqdefault.jpg" 
+                                 class="img-fluid rounded" alt="{{ video.title }}">
+                            {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 150px;">
+                                <i class="fas fa-video text-muted" style="font-size: 2rem;"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <h5>현재 영상 정보</h5>
+                            <p><strong>제목:</strong> {{ video.title }}</p>
+                            <p><strong>플랫폼:</strong> 
+                                <span class="badge bg-danger">YouTube</span>
+                            </p>
+                            <p><strong>작성자:</strong> {{ video.author }}</p>
+                            <p><strong>조회수:</strong> {{ video.view_count or 0 }}회</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- 수정 폼 -->
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">
+                                        <i class="fas fa-heading"></i> 영상 제목 *
+                                    </label>
+                                    <input type="text" class="form-control" id="title" name="title" 
+                                           value="{{ video.title }}" required maxlength="200">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="author" class="form-label">
+                                        <i class="fas fa-user"></i> 작성자
+                                    </label>
+                                    <input type="text" class="form-control" id="author" name="author" 
+                                           value="{{ video.author }}" maxlength="100">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                <i class="fas fa-align-left"></i> 설명
+                            </label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="4" placeholder="영상에 대한 설명을 입력하세요...">{{ video.description or '' }}</textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="video_url" class="form-label">
+                                        <i class="fas fa-link"></i> 영상 URL
+                                    </label>
+                                    <input type="url" class="form-control" id="video_url" name="video_url" 
+                                           value="{{ video.external_url or '' }}" 
+                                           placeholder="https://www.youtube.com/watch?v=...">
+                                    <div class="form-text">
+                                        YouTube 영상 URL을 입력하세요
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="performance_date" class="form-label">
+                                        <i class="fas fa-calendar"></i> 공연 날짜
+                                    </label>
+                                    <input type="date" class="form-control" id="performance_date" name="performance_date" 
+                                           value="{{ video.performance_date.strftime('%Y-%m-%d') if video.performance_date else '' }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="tags" class="form-label">
+                                <i class="fas fa-tags"></i> 태그
+                            </label>
+                            <input type="text" class="form-control" id="tags" name="tags" 
+                                   value="{{ video.tags or '' }}" 
+                                   placeholder="태그1, 태그2, 태그3 (쉼표로 구분)">
+                            <div class="form-text">쉼표(,)로 구분하여 여러 태그를 입력할 수 있습니다.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="thumbnail" class="form-label">
+                                <i class="fas fa-image"></i> 커스텀 썸네일
+                            </label>
+                            <input type="file" class="form-control" id="thumbnail" name="thumbnail" 
+                                   accept="image/*">
+                            <div class="form-text">
+                                JPG, PNG, GIF 파일만 업로드 가능합니다. 
+                                {% if video.thumbnail_filename %}
+                                현재: {{ video.thumbnail_filename }}
+                                {% else %}
+                                현재는 자동 썸네일을 사용 중입니다.
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- 고급 옵션 (접을 수 있는 섹션) -->
+                        <div class="accordion mb-3">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#advancedOptions">
+                                        <i class="fas fa-cog me-2"></i> 고급 옵션
+                                    </button>
+                                </h2>
+                                <div id="advancedOptions" class="accordion-collapse collapse">
+                                    <div class="accordion-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="view_count" class="form-label">조회수</label>
+                                                    <input type="number" class="form-control" id="view_count" 
+                                                           name="view_count" value="{{ video.view_count or 0 }}" min="0">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="like_count" class="form-label">좋아요 수</label>
+                                                    <input type="number" class="form-control" id="like_count" 
+                                                           name="like_count" value="{{ video.like_count or 0 }}" min="0">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="is_featured" 
+                                                   name="is_featured" {% if video.is_featured %}checked{% endif %}>
+                                            <label class="form-check-label" for="is_featured">
+                                                <i class="fas fa-star"></i> 추천 영상으로 설정
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 버튼들 -->
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> 수정 완료
+                                </button>
+                                <a href="{{ url_for('view_video', video_id=video.id) }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-eye"></i> 미리보기
+                                </a>
+                            </div>
+                            
+                            <button type="button" class="btn btn-danger" 
+                                    onclick="confirmDelete({{ video.id }}, '{{ video.title }}')">
+                                <i class="fas fa-trash"></i> 삭제
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 삭제 확인 모달 -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">영상 삭제 확인</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>경고:</strong> 이 작업은 되돌릴 수 없습니다!
+                </div>
+                <p>다음 영상을 정말 삭제하시겠습니까?</p>
+                <div class="alert alert-warning">
+                    <strong id="deleteVideoTitle"></strong>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> 삭제
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(videoId, videoTitle) {
+    document.getElementById('deleteVideoTitle').textContent = videoTitle;
+    document.getElementById('deleteForm').action = `/delete_video/${videoId}`;
+    
+    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+// 폼 유효성 검사
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const titleInput = document.getElementById('title');
+    const urlInput = document.getElementById('video_url');
+    
+    form.addEventListener('submit', function(e) {
+        if (!titleInput.value.trim()) {
+            e.preventDefault();
+            titleInput.focus();
+            alert('영상 제목을 입력해주세요.');
+            return false;
+        }
+        
+        if (urlInput.value && !isValidUrl(urlInput.value)) {
+            e.preventDefault();
+            urlInput.focus();
+            alert('올바른 URL 형식을 입력해주세요.');
+            return false;
+        }
+    });
+    
+    function isValidUrl(string) {
+        try {
+            new URL(string);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+});
+</script>
+
+<style>
+.card {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: none;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+    color: #495057;
+}
+
+.alert {
+    border: none;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+</style>
+{% endblock %}

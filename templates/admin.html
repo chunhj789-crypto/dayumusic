@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}관리자{% endblock %}
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1><span style="color: #d1c0a8;">관리자</span> 페이지</h1>
+        <hr class="divider">
+        <p>앙상블 다유 웹사이트 관리 도구</p>
+    </div>
+</section>
+
+<!-- Admin Content -->
+<section class="container">
+    <!-- Contact Management -->
+    <div class="card">
+        <h2 class="card-title">📧 문의 관리</h2>
+        <p>총 <strong>{{ contacts|length }}개</strong>의 문의가 있습니다.</p>
+        
+        {% if contacts %}
+            {% for contact in contacts %}
+            <div class="card mt-2" style="{% if not contact.answered %}border-left: 4px solid #e74c3c;{% else %}border-left: 4px solid #2ecc71;{% endif %}">
+                <div style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                    <strong>{{ contact.name }}</strong> ({{ contact.email }}) | 
+                    접수일: {{ contact.date_sent.strftime('%Y-%m-%d %H:%M') }}
+                    {% if contact.answered %}
+                        <span style="color: #2ecc71; font-weight: bold;">[답변완료]</span>
+                    {% else %}
+                        <span style="color: #e74c3c; font-weight: bold;">[미답변]</span>
+                    {% endif %}
+                </div>
+                <div style="padding: 1rem; background-color: var(--light-bg); border-radius: 4px; margin-top: 0.5rem;">
+                    <strong>문의내용:</strong><br>
+                    <p style="white-space: pre-line; margin-top: 0.5rem;">{{ contact.message }}</p>
+                </div>
+                {% if not contact.answered %}
+                <div style="margin-top: 1rem;">
+                    <button onclick="markAnswered({{ contact.id }})" style="background-color: #2ecc71;">답변완료 처리</button>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; color: var(--text-light); font-style: italic; padding: 2rem 0;">아직 문의가 없습니다.</p>
+        {% endif %}
+    </div>
+
+    <!-- Statistics -->
+    <div class="card">
+        <h2 class="card-title">📊 사이트 통계</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div style="background-color: #e3f2fd; padding: 1.5rem; border-radius: 8px; text-align: center;">
+                <h3 style="margin: 0; color: #1976d2;">총 문의 수</h3>
+                <p style="font-size: 2rem; margin: 0.5rem 0; color: #1976d2;">{{ contacts|length }}</p>
+            </div>
+            <div style="background-color: #f3e5f5; padding: 1.5rem; border-radius: 8px; text-align: center;">
+                <h3 style="margin: 0; color: #7b1fa2;">미답변 문의</h3>
+                <p style="font-size: 2rem; margin: 0.5rem 0; color: #7b1fa2;">
+                    {{ contacts|selectattr('answered', 'equalto', false)|list|length }}
+                </p>
+            </div>
+            <div style="background-color: #e8f5e8; padding: 1.5rem; border-radius: 8px; text-align: center;">
+                <h3 style="margin: 0; color: #388e3c;">답변완료</h3>
+                <p style="font-size: 2rem; margin: 0.5rem 0; color: #388e3c;">
+                    {{ contacts|selectattr('answered', 'equalto', true)|list|length }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Tools -->
+    <div class="card">
+        <h2 class="card-title">🛠️ 관리 도구</h2>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button onclick="exportContacts()" style="background-color: #17a2b8;">문의 내역 내보내기</button>
+            <button onclick="clearAnswered()" style="background-color: #6c757d;">답변완료 문의 정리</button>
+            <button onclick="refreshPage()" style="background-color: #ffc107; color: #000;">새로고침</button>
+        </div>
+    </div>
+</section>
+
+<script>
+function markAnswered(contactId) {
+    if (confirm('이 문의를 답변완료로 처리하시겠습니까?')) {
+        // 실제로는 서버에 AJAX 요청을 보내야 합니다
+        alert('답변완료 처리 기능은 추후 구현 예정입니다.');
+        // 페이지 새로고침 (임시)
+        location.reload();
+    }
+}
+
+function exportContacts() {
+    alert('문의 내역 내보내기 기능은 추후 구현 예정입니다.');
+}
+
+function clearAnswered() {
+    if (confirm('답변완료된 문의를 모두 삭제하시겠습니까?')) {
+        alert('문의 정리 기능은 추후 구현 예정입니다.');
+    }
+}
+
+function refreshPage() {
+    location.reload();
+}
+
+// 자동 새로고침 (5분마다)
+setInterval(function() {
+    console.log('자동 새로고침 확인 중...');
+}, 300000); // 5분 = 300,000ms
+</script>
+
+{% endblock %}

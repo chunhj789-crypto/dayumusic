@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}인사말{% endblock %}
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1><span style="color: #d1c0a8;">인사</span>말</h1>
+        <hr class="divider">
+        <p>앙상블 다유의 철학과 비전을 소개합니다</p>
+    </div>
+</section>
+
+<!-- Greeting Content -->
+<section class="container">
+ 
+    <!-- Core Values -->
+    <div class="card">
+        <div class="value-item">
+        <p>
+              안녕하세요 앙상블다유 대표 천현정입니다<br>첼로앙상블 다유와 함께하는 음악 여행을 함께 하시기바랍니다
+        </p><br>
+           <h4 class="card-title" style="color: var(--primary-color);">선한 공동체 실현</h4>
+            <p>앙상블 다유는 소외된 이웃에 대한 깊은 이해와 관심을 바탕으로 봉사활동에 헌신해온 전문 연주자들이 모여 설립한 단체입니다. 
+            저희는 병원, 복지관, 장애인 시설 등 다양한 곳에서 음악 공연을 통해 사랑과 나눔의 가치를 실천하며, 
+            음악이 주는 치유와 희망의 힘으로 더불어 함께 살아가는 따뜻한 공동체를 만들어가고자 합니다.</p><br>
+
+            <h4 class="card-title" style="color: var(--primary-color);">전문연주자 원로와 현역의 협업</h4>
+            <p>앙상블 다유는 원로 예술인 연주자와 현역 연주자가 조화를 이루는 특별한 모임입니다. 
+            모두들 국내외 유수 음악대학을 졸업하고 풍부한 공연 경력을 지닌 분들이며, 
+            선배 연주자들은 오랜 시간 쌓아온 원숙함과 깊이를 바탕으로 따뜻한 리더십을 발휘하며, 
+            후배 연주자들은 신선한 에너지와 열정으로 새로운 활력을 더합니다.</p><br>
+
+ 
+            <h4 class="card-title" style="color: var(--primary-color);">첼로앙상블의 창의적 음악실현</h4>
+            <p>우리 앙상블은 첼로 앙상블의 한계를 넘어 다양한 편성과 레퍼토리를 창의적으로 재구성하며, 
+            음악적 해석의 새로운 가능성을 탐구하는 데 중점을 두고 있습니다. 
+            기존의 현악 사중주, 오페라곡, 뮤지컬곡, 오케스트라 작품을 첼로 앙상블로 편곡하여 
+            원작의 본질을 유지하면서도 첼로만의 독창적인 음색과 텍스처를 활용해 음악을 재탄생시키고 있습니다.</p><br>
+            음악을 통해 세대를 초월한 소통과 사회적 가치 실현,
+            그리고 첼로 앙상블의 새로운 가능성을 탐구하는
+            <strong>앙상블 다유</strong>와 함께해 주십시오.  감사합니다.
+
+        </div>
+    </div>
+
+
+    <!-- Navigation -->
+    <div class="text-center mt-4">
+        <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="/contact" class="btn btn-outline">문의하기</a>
+        </div>
+    </div>
+</section>
+
+<style>
+.value-item {
+    padding: 1.5rem 0;
+}
+
+.value-item:not(:last-child) {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 1.5rem;
+}
+</style>
+
+{% endblock %}
