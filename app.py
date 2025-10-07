@@ -1,5 +1,3 @@
-# Render.com용 app.py 수정사항
-
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -8,48 +6,35 @@ import os
 
 app = Flask(__name__)
 
-# ============================================
-# 1. SECRET_KEY 설정 (환경 변수 사용)
-# ============================================
+# 환경 변수 설정
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# ============================================
-# 2. 데이터베이스 설정 (중요!)
-# ============================================
-# Render는 PostgreSQL 사용, 로컬은 SQLite 사용
+# 데이터베이스 설정
 if os.environ.get('DATABASE_URL'):
-    # Render.com 환경 (PostgreSQL)
     database_url = os.environ.get('DATABASE_URL')
-    # Render의 PostgreSQL URL 형식 변경 (postgres:// → postgresql://)
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 else:
-    # 로컬 개발 환경 (SQLite)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# ============================================
-# 3. 파일 업로드 설정
-# ============================================
-# Render는 임시 파일 시스템 사용 (재배포 시 삭제됨)
-# 나중에 Cloudinary 같은 외부 스토리지로 변경 필요
+# 파일 업로드 설정
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
+MAX_FILE_SIZE = 16 * 1024 * 1024
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
 
-# 업로드 폴더가 없으면 생성
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 db = SQLAlchemy(app)
 
 # ============================================
-# 4. 데이터베이스 모델 (기존과 동일)
+# 데이터베이스 모델
 # ============================================
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -67,24 +52,20 @@ class Image(db.Model):
     order = db.Column(db.Integer, default=1)
     date_uploaded = db.Column(db.DateTime, default=datetime.utcnow)
 
-# ============================================
-# 5. 데이터베이스 초기화 (중요!)
-# ============================================
-# Render.com에서 자동으로 테이블 생성
+# 데이터베이스 초기화
 with app.app_context():
     db.create_all()
 
 # ============================================
-# 6. 관리자 인증 설정
+# 관리자 설정
 # ============================================
-# 환경 변수로 관리자 비밀번호 설정
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')  # 기본값
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
 def check_admin():
     return session.get('is_admin', False)
 
 # ============================================
-# 7. 헬퍼 함수들 (기존과 동일)
+# 헬퍼 함수
 # ============================================
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -116,18 +97,46 @@ def inject_template_vars():
     }
 
 # ============================================
-# 8. 라우트들 (기존과 동일하게 유지)
+# 라우트
 # ============================================
 
+# 홈페이지
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# 인사말
+@app.route('/greeting')
+def greeting():
+    return render_template('greeting.html')
+
+# 멤버 소개
+@app.route('/members')
+def members():
+    return render_template('members.html')
+
+# 힐링콘서트
+@app.route('/healingconcert')
+def healingconcert():
+    return render_template('healingconcert.html')
+
+# 포트폴리오
+@app.route('/portfolio')
+def portfolio():
+    return render_template('portfolio.html')
+
+# 연락처
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+# 게시판
 @app.route('/board')
 def board():
     posts = Post.query.order_by(Post.date_posted.desc()).all()
     return render_template('board.html', posts=posts, is_admin=check_admin())
 
+# 게시글 상세
 @app.route('/post/<int:post_id>')
 def post_detail(post_id):
     post = Post.query.get_or_404(post_id)
@@ -147,6 +156,7 @@ def admin_login():
             flash('비밀번호가 틀렸습니다.', 'error')
     return render_template('admin_login.html')
 
+# 관리자 로그아웃
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('is_admin', None)
@@ -171,7 +181,6 @@ def write_post():
             db.session.add(new_post)
             db.session.flush()
             
-            # 이미지 처리
             uploaded_files = request.files.getlist('images')
             for i, file in enumerate(uploaded_files):
                 if file and file.filename != '' and allowed_file(file.filename):
@@ -210,14 +219,12 @@ def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
     
     try:
-        # 연결된 이미지 파일들 삭제
         images = Image.query.filter_by(post_id=post_id).all()
         for image in images:
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], image.filename)
             if os.path.exists(file_path):
                 os.remove(file_path)
         
-        # 데이터베이스에서 삭제 (이미지는 cascade로 자동 삭제)
         db.session.delete(post)
         db.session.commit()
         
@@ -228,10 +235,15 @@ def delete_post(post_id):
     
     return redirect(url_for('board'))
 
-# ============================================
-# 9. 앱 실행 (Render에서는 gunicorn 사용)
-# ============================================
+# 404 에러 핸들러
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+# 500 에러 핸들러
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
+
 if __name__ == '__main__':
-    # 로컬 개발용
     app.run(debug=True)
-    # Render에서는 gunicorn이 실행하므로 이 부분은 무시됨
