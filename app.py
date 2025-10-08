@@ -10,15 +10,24 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') 
 
 # 데이터베이스 설정
-if os.environ.get('DATABASE_URL'):
-    database_url = os.environ.get('DATABASE_URL')
+# 데이터베이스 설정 (수정된 버전)
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    # Render PostgreSQL URL 형식 처리
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    print(f"Using PostgreSQL: {database_url[:30]}...")  # 디버깅용
 else:
+    # 로컬 개발용 SQLite
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+    print("Using SQLite for local development")
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300,
+}
 
 # 파일 업로드 설정
 UPLOAD_FOLDER = 'static/uploads'
@@ -248,5 +257,6 @@ def internal_server_error(e):
 if __name__ == '__main__':
 
     app.run(debug=True)
+
 
 
