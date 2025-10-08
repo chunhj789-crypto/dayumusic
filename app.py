@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 
 # 환경 변수 설정
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dayu-secret-key-@#$!!QSAX-change-this')
 
 # 데이터베이스 설정
 if os.environ.get('DATABASE_URL'):
@@ -246,4 +246,5 @@ def internal_server_error(e):
     return render_template('500.html'), 500
 
 if __name__ == '__main__':
+
     app.run(debug=True)
