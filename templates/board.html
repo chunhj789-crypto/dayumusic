@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}게시판{% endblock %}
+{% block content %}
+
+<section style="max-width: 1200px; margin: 0 auto; padding: 40px 30px;">
+    
+    <!-- 페이지 헤더 -->
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.2em; color: #2c3e50; font-weight: 300; margin: 0;">게시판</h1>
+        <div style="width: 50px; height: 2px; background: #8b7355; margin: 20px auto;"></div>
+        <p style="color: #666; font-size: 1em;">앙상블 다유의 소식과 공지사항을 확인하세요</p>
+    </div>
+
+    <!-- 글쓰기 버튼 (관리자만 표시) -->
+    {% if is_admin %}
+    <div style="text-align: right; margin-bottom: 30px;">
+        <a href="/write" 
+           style="display: inline-block; background-color: #8b7355; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: 400; transition: all 0.3s ease;"
+           onmouseover="this.style.background='#6d5a42'"
+           onmouseout="this.style.background='#8b7355'">
+            📝 새 글 작성
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- 게시글 목록 (카드 형태) -->
+    {% if posts %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;">
+            {% for post in posts %}
+            <div style="background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;"
+                 onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.15)'"
+                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.08)'"
+                 onclick="window.location.href='/post/{{ post.id }}'">
+                
+                <!-- 게시글 이미지 -->
+                {% if post.image_filename %}
+                <div style="height: 200px; overflow: hidden; background: #f8f9fa;">
+                    <img src="{{ url_for('static', filename='uploads/' + post.image_filename) }}" 
+                         alt="첨부 이미지" 
+                         style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                {% else %}
+                <div style="height: 200px; background: linear-gradient(135deg, #8b7355, #a08266); display: flex; align-items: center; justify-content: center;">
+                    <span style="color: white; font-size: 3em; opacity: 0.7;">🎼</span>
+                </div>
+                {% endif %}
+                
+                <!-- 게시글 내용 -->
+                <div style="padding: 20px;">
+                    <div style="margin-bottom: 15px;">
+                        <h3 style="font-size: 1.3em; color: #2c3e50; margin: 0 0 8px 0; font-weight: 500; line-height: 1.3;">
+                            {{ post.title }}
+                        </h3>
+                        <div style="color: #999; font-size: 0.9em; margin-bottom: 12px;">
+                            <span style="color: #8b7355; font-weight: 400;">{{ post.author }}</span> | 
+                            {% set display_date = get_display_date(post) %}
+                            {% if display_date != post.date_posted %}
+                                <span style="color: #999; font-weight: 500;">{{ display_date.strftime('%Y.%m.%d') }}</span>
+                                <span style="color: #999; font-size: 0.8em;"></span>
+                            {% else %}
+                                {{ post.date_posted.strftime('%Y.%m.%d') }}
+                            {% endif %}
+                            {% if is_admin %}
+                                <span style="background: #8b7355; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.75em; margin-left: 8px;">관리자</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- 본문 미리보기 -->
+                    <p style="color: #555; line-height: 1.6; margin: 0; font-size: 0.95em;">
+                        {% if post.content|length > 80 %}
+                            {{ post.content[:80] }}...
+                        {% else %}
+                            {{ post.content }}
+                        {% endif %}
+                    </p>
+                    
+                    <!-- 더보기 표시 -->
+                    <div style="margin-top: 15px; text-align: right;">
+                        <span style="color: #8b7355; font-size: 0.9em; font-weight: 500;">자세히 보기 →</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- 게시글이 없는 경우 -->
+        <div style="text-align: center; padding: 80px 20px; background: #f8f9fa; border-radius: 12px; border: 2px dashed #ddd;">
+            <div style="font-size: 3em; margin-bottom: 20px; opacity: 0.5;">📝</div>
+            <h3 style="color: #666; margin: 0 0 15px 0; font-weight: 300;">아직 게시글이 없습니다</h3>
+            <p style="color: #999; margin: 0 0 25px 0;">첫 번째 게시글을 작성해보세요!</p>
+            {% if is_admin %}
+            <a href="/write" 
+               style="display: inline-block; background-color: #8b7355; color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: 400;">
+                글쓰기
+            </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+</section>
+
+<style>
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    section {
+        padding: 20px 15px !important;
+    }
+    
+    .grid-container {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .card {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.8em !important;
+    }
+    
+    .card-content {
+        padding: 15px !important;
+    }
+}
+</style>
+
+{% endblock %}
