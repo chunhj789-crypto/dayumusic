@@ -123,7 +123,49 @@ def healingconcert():
 # 포트폴리오
 @app.route('/portfolio')
 def portfolio():
-    return render_template('portfolio.html')
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = 9
+        
+        # 기본 쿼리
+        query = Video.query.order_by(Video.date_uploaded.desc())
+        
+        # 페이지네이션
+        videos_paginated = query.paginate(
+            page=page, 
+            per_page=per_page, 
+            error_out=False
+        )
+        
+        # 각 비디오의 본문에서 날짜 추출하고 +1일 처리
+        for video in videos_paginated.items:
+            if video.description:
+                # 본문에서 YYYY.M.D 또는 YYYY.MM.DD 형식의 날짜 찾기
+                date_match = re.search(r'(\d{4})\.(\d{1,2})\.(\d{1,2})', video.description)
+                if date_match:
+                    try:
+                        # 찾은 날짜를 파싱하고 +1일 추가
+                        year = int(date_match.group(1))
+                        month = int(date_match.group(2))
+                        day = int(date_match.group(3))
+                        
+                        original_date = datetime(year, month, day)
+                        next_day = original_date + timedelta(days=1)
+                        video.display_date = next_day.strftime('%Y-%m-%d')
+                    except ValueError:
+                        video.display_date = '날짜 없음'
+                else:
+                    video.display_date = '날짜 없음'
+            else:
+                video.display_date = '날짜 없음'
+        
+        return render_template('portfolio.html', videos=videos_paginated.items, pagination=videos_paginated)
+        
+    except Exception as e:
+        print(f"포트폴리오 오류: {e}")
+        flash('포트폴리오를 불러오는 중 문제가 발생했습니다.')
+        return render_template('portfolio.html', videos=[], pagination=None)
+    
 
 # 연락처
 @app.route('/contact')
