@@ -139,6 +139,15 @@ def post_detail(post_id):
     images = Image.query.filter_by(post_id=post_id).order_by(Image.order.asc()).all()
     return render_template('post.html', post=post, images=images, is_admin=check_admin())
 
+# /admin 경로 추가
+@app.route('/admin')
+def admin():
+    # 이미 로그인한 경우 게시판으로
+    if check_admin():
+        return redirect(url_for('board'))
+    # 로그인 안 한 경우 로그인 페이지로
+    return redirect(url_for('admin_login'))
+
 # 관리자 로그인
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
