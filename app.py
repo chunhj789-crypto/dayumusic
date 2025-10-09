@@ -7,27 +7,18 @@ import os
 app = Flask(__name__)
 
 # 환경 변수 설정
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') 
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
 # 데이터베이스 설정
-# 데이터베이스 설정 (수정된 버전)
-database_url = os.environ.get('DATABASE_URL')
-if database_url:
-    # Render PostgreSQL URL 형식 처리
+if os.environ.get('DATABASE_URL'):
+    database_url = os.environ.get('DATABASE_URL')
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-    print(f"Using PostgreSQL: {database_url[:30]}...")  # 디버깅용
 else:
-    # 로컬 개발용 SQLite
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-    print("Using SQLite for local development")
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_pre_ping': True,
-    'pool_recycle': 300,
-}
 
 # 파일 업로드 설정
 UPLOAD_FOLDER = 'static/uploads'
@@ -140,10 +131,6 @@ def contact():
     return render_template('contact.html')
 
 # 게시판
-@app.route('/board')
-def board():
-    posts = Post.query.order_by(Post.date_posted.desc()).all()
-    return render_template('board.html', posts=posts, is_admin=check_admin())
 
 # 게시글 상세
 @app.route('/post/<int:post_id>')
@@ -244,6 +231,62 @@ def delete_post(post_id):
     
     return redirect(url_for('board'))
 
+
+# 디버그 라우트 - templates 폴더 확인
+@app.route('/debug/templates')
+def debug_templates():
+    import os
+    
+    results = {
+        'app_root': os.getcwd(),
+        'template_folder': app.template_folder,
+        'template_folder_absolute': os.path.abspath(app.template_folder),
+        'exists': os.path.exists(app.template_folder),
+        'files': [],
+        'all_files_in_root': []
+    }
+    
+    # templates 폴더 파일 목록
+    if os.path.exists(app.template_folder):
+        try:
+            for root, dirs, files in os.walk(app.template_folder):
+                for file in files:
+                    filepath = os.path.join(root, file)
+                    results['files'].append(filepath)
+        except Exception as e:
+            results['files_error'] = str(e)
+    
+    # 현재 디렉토리 구조
+    try:
+        for item in os.listdir(os.getcwd()):
+            item_path = os.path.join(os.getcwd(), item)
+            is_dir = os.path.isdir(item_path)
+            results['all_files_in_root'].append({
+                'name': item,
+                'is_directory': is_dir
+            })
+    except Exception as e:
+        results['root_error'] = str(e)
+    
+    return results
+
+# board 라우트 수정 - 에러 메시지 추가
+@app.route('/board')
+def board():
+    import os
+    try:
+        posts = Post.query.order_by(Post.date_posted.desc()).all()
+        return render_template('board.html', posts=posts, is_admin=check_admin())
+    except Exception as e:
+        # 상세한 에러 정보 반환
+        return f"""
+        <h1>Board Error</h1>
+        <p>Error: {str(e)}</p>
+        <p>Template folder: {app.template_folder}</p>
+        <p>Exists: {os.path.exists(app.template_folder)}</p>
+        <p>Files in templates: {os.listdir(app.template_folder) if os.path.exists(app.template_folder) else 'Not found'}</p>
+        <a href="/debug/templates">Check debug info</a>
+        """, 500
 # 404 에러 핸들러
 @app.errorhandler(404)
 def page_not_found(e):
@@ -255,8 +298,4 @@ def internal_server_error(e):
     return render_template('500.html'), 500
 
 if __name__ == '__main__':
-
     app.run(debug=True)
-
-
-
